@@ -1,0 +1,146 @@
+<html>
+  <head>
+    <style>
+      /* http://tesolatrennertnyc.files.wordpress.com/2012/07/tic-tac-toe-board.gif */
+      #board {
+        border-collapse: collapse;
+      }
+      #board td, #board th {
+          border: 1px solid black;
+      }
+      #board tr:first-child td {
+          border-top: 0;
+      }
+      #board tr:last-child td {
+          border-bottom: 0;
+      }
+      #board tr td:first-child,
+      #board tr th:first-child {
+          border-left: 0;
+      }
+      #board tr td:last-child,
+      #board tr th:last-child {
+          border-right: 0;
+      }
+
+      .cell {
+          width: 60px;
+          height: 60px;
+          border-width: 1px;
+          border-style: solid;
+          border-color: black;
+          text-align: center;
+          vertical-align: center;
+          font-size: 3em;
+      }
+
+      .cell.open:hover {
+          background-color: lightgrey;
+
+      }
+    </style>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/coffee-script/1.1.2/coffee-script.min.js"></script>
+    <script type="text/coffeescript">
+      board_size = 3
+      board_range = [0..board_size-1]
+      players = ['x', 'o']
+      board = $ '#board'
+      turn = 0
+      game = (('' for c in board_range) for r in board_range)
+
+      console.log game
+      
+      click = () ->
+        el = $(this)
+        [i, j] = [el.data('row'), el.data('col')]
+        
+        # can't play on a square that is taken
+        return if game[i][j]
+
+        # place move
+        game[i][j] = players[turn] 
+        el.text(players[turn]);
+        el.removeClass('open')
+
+        if checkWin(game, players[turn])
+          alert players[turn] + " won!"
+          clearBoard()
+          return
+
+        if checkCats(game)
+          alert "Cat's game, no winner"
+          clearBoard()
+          return
+
+
+        # toggle move
+        turn = (turn + 1) % 2
+        $('#turnlbl').text(players[turn])
+
+      checkWin = (g, player) ->
+        for i in board_range
+          # vertical win?
+          vert = (true for c in g[i] when c is player)
+          if vert.length is board_size
+            return true
+
+          # horizontal win?
+          horiz = (true for j in board_range when g[j][i] is player)
+          if horiz.length is board_size
+            return true
+
+        # diagonal win?
+        diag = (true for i in board_range when g[i][i] is player)
+        if diag.length is board_size
+          return true
+
+        return false
+
+      checkCats = (g) ->
+        for i in board_range
+          for j in board_range
+            return false if not g[i][j]
+
+        return true
+
+
+      clearBoard = () ->
+        $('#board td')
+          .text('')
+          .addClass('open')
+
+
+        for i in board_range
+          for j in board_range
+            game[i][j] = ''
+
+        turn = 0
+
+      # show visually who won and whose turn it is, then be done
+      $(document).ready (ev) ->
+        #
+        # create board
+        for i in board_range
+            tr = $('<tr>')
+            board.append(tr)
+
+            for j in board_range
+              td = $('<td>')
+                .addClass('cell')
+                .addClass('open')
+                .data('row', i)
+                .data('col', j)
+                .on('click', click);
+              tr.append(td)
+    </script>
+  </head>
+  <body>
+    <h2>Tic Tac Toe</h2>
+    <div>
+        <span id="turnlbl">x</span>'s turn
+    </div>
+    <table id="board">
+    </table>    
+  </body>
+</html>
